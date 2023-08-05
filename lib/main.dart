@@ -1571,42 +1571,91 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
+    );
+  }
+}
+
+class SelectedPage {
+  int series;
+  int title;
+
+  SelectedPage(this.series, this.title);
+}
+
+class ListPage extends StatelessWidget {
+  const ListPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var pages = <Widget>[];
+
+    for (var series in Titles.keys) {
+      pages.add(Row(
+        children: [
+          const Padding(padding: EdgeInsets.all(5)),
+          Text(Series[series] ?? "",
+              style: const TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.bold,
+              )),
+          // const Spacer(),
+        ],
+      ));
+      for (var title in Titles[series]!.keys) {
+        pages.add(Row(
+          children: [
+            GestureDetector(
+              onTap: () {
+                Navigator.pop(context, SelectedPage(series, title));
+              },
+              child: Row(
+                children: [
+                  const Padding(padding: EdgeInsets.all(10)),
+                  Container(
+                    width: MediaQuery.of(context).size.width - 20,
+                    child: Text(
+                      Titles[series]?[title] ?? "",
+                      style: const TextStyle(fontSize: 16),
+                      softWrap: true,
+                    ),
+                  ),
+
+                  // const Spacer(),
+                ],
+              ),
+            )
+          ],
+        ));
+        pages.add(const Row(
+          children: [Padding(padding: EdgeInsets.all(5))],
+        ));
+      }
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Kardiology"),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: pages,
+          ),
+        ),
+      ),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+  const MyHomePage({
+    super.key,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -1669,15 +1718,41 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      // appBar: AppBar(
-      //   // TRY THIS: Try changing the color here to a specific color (to
-      //   // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-      //   // change color while the other colors stay the same.
-      //   backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      //   // Here we take the value from the MyHomePage object that was created by
-      //   // the App.build method, and use it to set our appbar title.
-      //   title: Text(widget.title),
-      // ),
+      appBar: AppBar(
+        // TRY THIS: Try changing the color here to a specific color (to
+        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
+        // change color while the other colors stay the same.
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: const Text("Kardiology"),
+        centerTitle: true,
+        actions: [
+          GestureDetector(
+              onTap: () async {
+                final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute<SelectedPage>(
+                        builder: (context) => const ListPage()));
+
+                if (result == null) return;
+
+                print("result: ${result.series}, ${result.title}");
+
+                if (result.series > 0) {
+                  setState((() {
+                    _series = result.series;
+                    _date = result.title; // maybe off by one error
+                  }));
+                }
+              },
+              child: const Icon(Icons.menu)),
+          const Padding(
+            padding: EdgeInsets.all(12.0),
+          ),
+        ],
+        // Icon(Icons.home)
+      ),
       body: Center(
         child: DecoratedBox(
           decoration: BoxDecoration(
