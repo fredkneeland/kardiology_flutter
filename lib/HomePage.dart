@@ -1591,12 +1591,12 @@ class ListPage extends StatelessWidget {
               },
               child: Row(
                 children: [
-                  const Padding(padding: EdgeInsets.all(10)),
+                  const Padding(padding: EdgeInsets.all(20)),
                   Container(
-                    width: MediaQuery.of(context).size.width - 20,
+                    width: MediaQuery.of(context).size.width - 60,
                     child: Text(
                       Titles[series]?[title] ?? "",
-                      style: const TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 20),
                       softWrap: true,
                     ),
                   ),
