@@ -16,6 +16,7 @@ class MyApp extends StatelessWidget {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.leanBack);
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Kardiology',
       theme: ThemeData(
         useMaterial3: true,
