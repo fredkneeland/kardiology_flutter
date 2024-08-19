@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:auto_size_text/auto_size_text.dart';
+
 import 'dart:async';
 
 final series_colors = {
@@ -16,103 +18,103 @@ final Series = {
 
 final Titles = {
   1: {
-    1: "God is Sovereign ",
-    2: "God is Holy",
-    3: "God is Great",
-    4: "God is Righteous ",
-    5: "God is Immutable",
-    6: "God is Omnipotent",
-    7: "God is Omniscient",
-    8: "God is Omnipresent ",
-    9: "God is Eternal",
-    11: "God is Faithful ",
-    10: "God is Incomprehensible",
-    12: "God is Loving",
-    13: "God is Merciful",
-    14: "God is Gracious",
-    16: "God is Good ",
-    15: "God is Forgiving ",
-    17: "God is Longsuffering ",
-    18: "God is Wrathful ",
-    19: "God is Jealous",
-    20: "God is Just",
-    21: "God is Wise ",
-    22: "God is Truth",
-    23: "God is our Advocate ",
-    24: "God is Creator ",
-    25: "God is Yahweh ",
-    26: "God is Yahweh Rapha",
-    27: "God is Yahweh Raah",
-    28: "God is Yahweh Shalom ",
-    29: "God is Yahweh Jireh",
-    30: "God is Adonai ",
-    31: "God is El Elyon"
+    1: "1. God is Sovereign ",
+    2: "2. God is Holy",
+    3: "3. God is Great",
+    4: "4. God is Righteous ",
+    5: "5. God is Immutable",
+    6: "6. God is Omnipotent",
+    7: "7. God is Omniscient",
+    8: "8. God is Omnipresent ",
+    9: "9. God is Eternal",
+    11: "11. God is Faithful ",
+    10: "10. God is Incomprehensible",
+    12: "12. God is Loving",
+    13: "13. God is Merciful",
+    14: "14. God is Gracious",
+    16: "16. God is Good ",
+    15: "15. God is Forgiving ",
+    17: "17. God is Longsuffering ",
+    18: "18. God is Wrathful ",
+    19: "19. God is Jealous",
+    20: "20. God is Just",
+    21: "21. God is Wise ",
+    22: "22. God is Truth",
+    23: "23. God is our Advocate ",
+    24: "24. God is Creator ",
+    25: "25. God is Yahweh ",
+    26: "26. God is Yahweh Rapha",
+    27: "27. God is Yahweh Raah",
+    28: "28. God is Yahweh Shalom ",
+    29: "29. God is Yahweh Jireh",
+    30: "30. God is Adonai ",
+    31: "31. God is El Elyon"
   },
   2: {
-    1: "Jesus is God, the Express Image & Fullness of God",
-    2: "Jesus is Preeminent",
-    3: "Jesus is the Son of God",
-    4: "Jesus is Immanuel",
-    5: "Jesus is the Heir of All Things",
-    6: "Jesus is God’s Servant ",
-    7: "Jesus is the Head of the Body (Church)",
-    8: "Jesus is the Bridegroom of the Church",
-    9: "Jesus is the Chief Cornerstone, Capstone & Living Stone",
-    10: "Jesus is the Scapegoat ",
-    11: "Jesus is the Sacrificial Sin Offering",
-    12: "Jesus is the Lamb of God ",
-    13: "Jesus is the Great High Priest",
-    14: "Jesus is the Interceding High Priest ",
-    15: "Jesus Gives Aid to those Tested by Adversity",
-    16: "Jesus is the Mediator of the New Covenant ",
-    17: "Jesus is the Propitiation",
-    18: "Jesus is the Reconciler",
-    19: "Jesus is the Redeemer & the Ransom",
-    20: "Jesus is the Author and Finisher of our Salvation",
-    21: "Jesus is the Messiah",
-    22: "Jesus is Savior",
-    23: "Jesus is the Bread of Life",
-    24: "Jesus is the Light of the World",
-    25: "Jesus is the Door—the Way of Salvation",
-    26: "Jesus is the Good, Great, & Chief Shepherd",
-    27: "Jesus is the Resurrection and the Life",
-    28: "Jesus is the Vine",
-    29: "Jesus is the Word ",
-    30: "Jesus is Lord and King",
-    31: "Jesus is the Judge"
+    1: "1. Jesus is God, the Express Image & Fullness of God",
+    2: "2. Jesus is Preeminent",
+    3: "3. Jesus is the Son of God",
+    4: "4. Jesus is Immanuel",
+    5: "5. Jesus is the Heir of All Things",
+    6: "6. Jesus is God’s Servant ",
+    7: "7. Jesus is the Head of the Body (Church)",
+    8: "8. Jesus is the Bridegroom of the Church",
+    9: "9. Jesus is the Chief Cornerstone, Capstone & Living Stone",
+    10: "10. Jesus is the Scapegoat ",
+    11: "11. Jesus is the Sacrificial Sin Offering",
+    12: "12. Jesus is the Lamb of God ",
+    13: "13. Jesus is the Great High Priest",
+    14: "14. Jesus is the Interceding High Priest ",
+    15: "15. Jesus Gives Aid to those Tested by Adversity",
+    16: "16. Jesus is the Mediator of the New Covenant ",
+    17: "17. Jesus is the Propitiation",
+    18: "18. Jesus is the Reconciler",
+    19: "19. Jesus is the Redeemer & the Ransom",
+    20: "20. Jesus is the Author and Finisher of our Salvation",
+    21: "21. Jesus is the Messiah",
+    22: "22. Jesus is Savior",
+    23: "23. Jesus is the Bread of Life",
+    24: "24. Jesus is the Light of the World",
+    25: "25. Jesus is the Door—the Way of Salvation",
+    26: "26. Jesus is the Good, Great, & Chief Shepherd",
+    27: "27. Jesus is the Resurrection and the Life",
+    28: "28. Jesus is the Vine",
+    29: "29. Jesus is the Word ",
+    30: "30. Jesus is Lord and King",
+    31: "31. Jesus is the Judge"
   },
   3: {
-    1: "The Holy Spirit is God",
-    2: "The Holy Spirit is Creator",
-    3: "The Holy Spirit Inspired the Word of God ",
-    4: "The Holy Spirit Empowered Jesus’ Conception",
-    5: "The Holy Spirit was Active in Christ’s Ministry",
-    6: "The Holy Spirit was Sent from God and Jesus",
-    7: "The Holy Spirit is the Promise of the Father",
-    8: "The Holy Spirit Convicts",
-    9: "The Holy Spirit Regenerates",
-    10: "The Holy Spirit Baptizes Believers",
-    11: "The Holy Spirit Indwells Believers",
-    12: "The Holy Spirit Seals Believers",
-    13: "The Holy Spirit Gives Gifts to Believers",
-    14: "The Holy Spirit Bears Witness of God’s Children",
-    15: "The Holy Spirit Intercedes for Believers",
-    16: "The Holy Spirit Gives Discernment",
-    17: "The Holy Spirit Sanctifies Believers",
-    18: "The Holy Spirit Empowers Believers",
-    19: "The Holy Spirit Fills Believers ",
-    20: "The Holy Spirit is at Odds with the Flesh",
-    21: "The Holy Spirit can be Sinned Against",
-    22: "Believers are to Walk in the Holy Spirit",
-    23: "The Holy Spirit Produces Fruit: LOVE",
-    24: "The Holy Spirit Produces Fruit: JOY",
-    25: "The Holy Spirit Produces Fruit: PEACE",
-    26: "The Holy Spirit Produces Fruit: PATIENCE",
-    27: "The Holy Spirit Produces Fruit: KINDNESS",
-    28: "The Holy Spirit Produces Fruit: GOODNESS",
-    29: "The Holy Spirit Produces Fruit: FAITHFULNESS",
-    30: "The Holy Spirit Produces Fruit: MEEKNESS",
-    31: "The Holy Spirit Produces Fruit: SELF-CONTROL "
+    1: "1. The Holy Spirit is God",
+    2: "2. The Holy Spirit is Creator",
+    3: "3. The Holy Spirit Inspired the Word of God ",
+    4: "4. The Holy Spirit Empowered Jesus’ Conception",
+    5: "5. The Holy Spirit was Active in Christ’s Ministry",
+    6: "6. The Holy Spirit was Sent from God and Jesus",
+    7: "7. The Holy Spirit is the Promise of the Father",
+    8: "8. The Holy Spirit Convicts",
+    9: "9. The Holy Spirit Regenerates",
+    10: "10. The Holy Spirit Baptizes Believers",
+    11: "11. The Holy Spirit Indwells Believers",
+    12: "12. The Holy Spirit Seals Believers",
+    13: "13. The Holy Spirit Gives Gifts to Believers",
+    14: "14. The Holy Spirit Bears Witness of God’s Children",
+    15: "15. The Holy Spirit Intercedes for Believers",
+    16: "16. The Holy Spirit Gives Discernment",
+    17: "17. The Holy Spirit Sanctifies Believers",
+    18: "18. The Holy Spirit Empowers Believers",
+    19: "19. The Holy Spirit Fills Believers ",
+    20: "20. The Holy Spirit is at Odds with the Flesh",
+    21: "21. The Holy Spirit can be Sinned Against",
+    22: "22. Believers are to Walk in the Holy Spirit",
+    23: "23. The Holy Spirit Produces Fruit: LOVE",
+    24: "24. The Holy Spirit Produces Fruit: JOY",
+    25: "25. The Holy Spirit Produces Fruit: PEACE",
+    26: "26. The Holy Spirit Produces Fruit: PATIENCE",
+    27: "27. The Holy Spirit Produces Fruit: KINDNESS",
+    28: "28. The Holy Spirit Produces Fruit: GOODNESS",
+    29: "29. The Holy Spirit Produces Fruit: FAITHFULNESS",
+    30: "30. The Holy Spirit Produces Fruit: MEEKNESS",
+    31: "31. The Holy Spirit Produces Fruit: SELF-CONTROL "
   },
 };
 
@@ -1574,11 +1576,26 @@ class ListPage extends StatelessWidget {
       pages.add(Row(
         children: [
           const Padding(padding: EdgeInsets.all(5)),
-          Text(Series[series] ?? "",
-              style: const TextStyle(
-                fontSize: 36,
-                fontWeight: FontWeight.bold,
-              )),
+          Container(
+              width: MediaQuery.of(context).size.width - 15,
+              child: AutoSizeText(
+                Series[series] ?? "",
+                style: const TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+              )
+              // Text(
+              //   Series[series] ?? "",
+              //   style: const TextStyle(
+              //     fontSize: 36,
+              //     fontWeight: FontWeight.bold,
+              //   ),
+              //   softWrap: true,
+              // ),
+              ),
+
           // const Spacer(),
         ],
       ));
@@ -1661,6 +1678,7 @@ class _HomePageState extends State<HomePage> {
   int _series = 1;
   int _picture = 1;
   int _date = 1;
+  bool _left = true;
   Timer? timer;
 
   @override
@@ -1678,6 +1696,24 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _series = series;
     });
+  }
+
+  void incrementDay() {
+    setState(() {
+      _date = (_date % 31) + 1;
+    });
+  }
+
+  void decrementDay() {
+    if (_date == 1) {
+      setState(() {
+        _date = 31;
+      });
+    } else {
+      setState(() {
+        _date = _date - 1;
+      });
+    }
   }
 
   void addPic() {
@@ -1715,251 +1751,266 @@ class _HomePageState extends State<HomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       extendBodyBehindAppBar: true,
-      // appBar: AppBar(
-      //   // TRY THIS: Try changing the color here to a specific color (to
-      //   // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-      //   // change color while the other colors stay the same.
-      //   backgroundColor: Colors.transparent,
-      //   // Color.fromARGB(255, 250, 249, 246)
-      //   elevation: 0, // necessary for invisible background
-      //   //    255, 250, 249, 246), //Theme.of(context).colorScheme.inversePrimary,
-      //   // Here we take the value from the HomePage object that was created by
-      //   // the App.build method, and use it to set our appbar title.
-      //   title: DecoratedBox(
-      //     decoration: const BoxDecoration(
-      //         color: Color.fromARGB(255, 250, 249, 246),
-      //         border: Border(
-      //             top: BorderSide(),
-      //             left: BorderSide(),
-      //             right: BorderSide(),
-      //             bottom: BorderSide())),
-      //     child: Padding(
-      //       padding: const EdgeInsets.all(5.0),
-      //       child: Text(
-      //         textAlign: TextAlign.center,
-      //         Titles[_series]![_date]!,
-      //         style: Theme.of(context).textTheme.headlineLarge,
-      //       ),
-      //     ),
-      //   ),
-      //   // title: Text(Titles[_series]![_date]!), //const Text("Kardiology"),
-      //   centerTitle: true,
-      //   actions: [
-      //     GestureDetector(
-      //         onTap: () async {
-      //           final result = await Navigator.push(
-      //               context,
-      //               MaterialPageRoute<SelectedPage>(
-      //                   builder: (context) => const ListPage()));
+      body: GestureDetector(
+        onPanUpdate: (details) {
+          // Swiping in right direction.
+          if (details.delta.dx > 0) {
+            setState(() {
+              _left = false;
+            });
+          }
 
-      //           if (result == null) return;
-
-      //           print("result: ${result.series}, ${result.title}");
-
-      //           if (result.series > 0) {
-      //             setState((() {
-      //               _series = result.series;
-      //               _date = result.title; // maybe off by one error
-      //             }));
-      //           }
-      //         },
-      //         child: const Icon(Icons.menu)),
-      //     const Padding(
-      //       padding: EdgeInsets.all(12.0),
-      //     ),
-      //   ],
-      //   // Icon(Icons.home)
-      // ),
-      body: Center(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage(flower),
-              fit: BoxFit.cover,
-              opacity: 0.5,
+          // Swiping in left direction.
+          if (details.delta.dx < 0) {
+            setState(() {
+              _left = true;
+            });
+          }
+        },
+        onPanEnd: (_) {
+          if (!_left) {
+            decrementDay();
+          } else {
+            incrementDay();
+          }
+        },
+        child: Center(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(flower),
+                fit: BoxFit.cover,
+                opacity: 0.5,
+              ),
             ),
-          ),
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Padding(
-                    padding: EdgeInsets.only(top: 60.0),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 500),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              const Spacer(),
-                              DecoratedBox(
-                                decoration: const BoxDecoration(
-                                    color: Color.fromARGB(255, 250, 249, 246),
-                                    border: Border(
-                                        top: BorderSide(),
-                                        left: BorderSide(),
-                                        right: BorderSide(),
-                                        bottom: BorderSide())),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5.0),
-                                  child: Container(
-                                    constraints: BoxConstraints(
-                                        maxWidth:
-                                            MediaQuery.of(context).size.width -
-                                                100),
-                                    child: Text(
-                                      textAlign: TextAlign.center,
-                                      Titles[_series]![_date]!,
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .headlineLarge,
+            child: Center(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    const Padding(
+                      padding: EdgeInsets.only(top: 60.0),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Container(
+                        constraints: const BoxConstraints(maxWidth: 500),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                const Spacer(),
+                                DecoratedBox(
+                                  decoration: const BoxDecoration(
+                                      color: Color.fromARGB(255, 250, 249, 246),
+                                      border: Border(
+                                          top: BorderSide(),
+                                          left: BorderSide(),
+                                          right: BorderSide(),
+                                          bottom: BorderSide())),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(5.0),
+                                    child: Container(
+                                      constraints: BoxConstraints(
+                                          maxWidth: MediaQuery.of(context)
+                                                  .size
+                                                  .width -
+                                              100),
+                                      child: Text(
+                                        textAlign: TextAlign.center,
+                                        Titles[_series]![_date]!,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineLarge,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
-                              const Spacer(),
-                              GestureDetector(
-                                  onTap: () async {
-                                    final result = await Navigator.push(
-                                        context,
-                                        MaterialPageRoute<SelectedPage>(
-                                            builder: (context) =>
-                                                const ListPage()));
+                                const Spacer(),
+                                GestureDetector(
+                                    onTap: () async {
+                                      final result = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute<SelectedPage>(
+                                              builder: (context) =>
+                                                  const ListPage()));
 
-                                    if (result == null) return;
+                                      if (result == null) return;
 
-                                    if (result.series > 0) {
-                                      setState((() {
-                                        _series = result.series;
-                                        _date = result.title;
-                                      }));
-                                    }
-                                  },
-                                  child: const Icon(Icons.menu)),
-                            ],
-                          ),
-                          const Text("\n"),
-                          DecoratedBox(
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(255, 250, 249, 246),
-                                border: Border(
-                                    top: BorderSide(),
-                                    left: BorderSide(),
-                                    right: BorderSide(),
-                                    bottom: BorderSide())),
-                            child: Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      Descriptions[_series]![_date]!,
-                                      // style: Theme.of(context).textTheme.headlineSmall,
-                                      textAlign: TextAlign.center,
-                                      // selectionColor: new Color.fromRGBO(
-                                      //     255, 255, 255, 0.75),
-                                    ),
-                                    const Text("\n"),
-                                    for (var verse
-                                        in verse_info[_series]![_date]!)
-                                      Text.rich(
+                                      if (result.series > 0) {
+                                        setState((() {
+                                          _series = result.series;
+                                          _date = result.title;
+                                        }));
+                                      }
+                                    },
+                                    child: const Icon(Icons.menu)),
+                              ],
+                            ),
+                            const Text("\n"),
+                            DecoratedBox(
+                              decoration: const BoxDecoration(
+                                  color: Color.fromARGB(255, 250, 249, 246),
+                                  border: Border(
+                                      top: BorderSide(),
+                                      left: BorderSide(),
+                                      right: BorderSide(),
+                                      bottom: BorderSide())),
+                              child: Padding(
+                                  padding: const EdgeInsets.all(5.0),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        Descriptions[_series]![_date]!,
+                                        // style: Theme.of(context).textTheme.headlineSmall,
                                         textAlign: TextAlign.center,
-                                        TextSpan(
-                                          text: '',
-                                          // style: TextStyle(
-                                          //     backgroundColor:
-                                          //         new Color.fromRGBO(255, 255, 255, 0.5)),
-                                          children: [
-                                            TextSpan(
-                                              text: '${verse["Reference"]}\n',
-                                              style: const TextStyle(
-                                                  decoration:
-                                                      TextDecoration.underline),
-                                            ),
-                                            TextSpan(
-                                              text:
-                                                  '${verse["Verse"]?.replaceAll("\n", " ")}',
-                                            ),
-                                            TextSpan(text: "\n"),
-                                          ],
+                                        // selectionColor: new Color.fromRGBO(
+                                        //     255, 255, 255, 0.75),
+                                      ),
+                                      const Text("\n"),
+                                      for (var verse
+                                          in verse_info[_series]![_date]!)
+                                        Text.rich(
+                                          textAlign: TextAlign.center,
+                                          TextSpan(
+                                            text: '',
+                                            // style: TextStyle(
+                                            //     backgroundColor:
+                                            //         new Color.fromRGBO(255, 255, 255, 0.5)),
+                                            children: [
+                                              TextSpan(
+                                                text: '${verse["Reference"]}\n',
+                                                style: const TextStyle(
+                                                    decoration: TextDecoration
+                                                        .underline),
+                                              ),
+                                              TextSpan(
+                                                text:
+                                                    '${verse["Verse"]?.replaceAll("\n", " ")}',
+                                              ),
+                                              TextSpan(text: "\n"),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  )),
+                            ),
+                            const Text("\n"),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                ButtonBar(
+                                  // mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    //   IconButton(
+                                    //     padding: const EdgeInsets.all(0),
+                                    //     iconSize: 20,
+                                    //     icon: const Icon(
+                                    //         Icons.arrow_back_ios_new_outlined),
+                                    //     onPressed: () {
+                                    //       decrementDay();
+                                    //     },
+                                    //   ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        _setSeries(series1);
+                                        decPic();
+                                      },
+                                      child: Text(
+                                        Series[series1]!,
+                                        style: const TextStyle(
+                                          // fontWeight: FontWeight.bold,
+                                          color: Colors.black,
                                         ),
                                       ),
+                                    ),
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        _setSeries(series2);
+                                        addPic();
+                                      },
+                                      child: Text(
+                                        Series[series2]!,
+                                        style: const TextStyle(
+                                          // fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ),
+                                    // IconButton(
+                                    //   padding: const EdgeInsets.all(0),
+                                    //   iconSize: 20,
+                                    //   icon: const Icon(
+                                    //       Icons.arrow_forward_ios_outlined),
+                                    //   onPressed: () {
+                                    //     incrementDay();
+                                    //   },
+                                    // ),
                                   ],
-                                )),
-                          ),
-                          const Text("\n"),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              ButtonBar(
-                                children: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      _setSeries(series1);
-                                      decPic();
-                                    },
-                                    child: Text(
-                                      Series[series1]!,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        // color: Color.fromARGB(
-                                        //     255,
-                                        //     series_colors[series1]!["red"]!,
-                                        //     series_colors[series1]!["green"]!,
-                                        //     series_colors[series1]!["blue"]!),
-                                      ),
-                                    ),
-                                  ),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      _setSeries(series2);
-                                      addPic();
-                                    },
-                                    child: Text(
-                                      Series[series2]!,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black,
-                                        // color: Color.fromARGB(
-                                        //     255,
-                                        //     series_colors[series2]!["red"]!,
-                                        //     series_colors[series2]!["green"]!,
-                                        //     series_colors[series2]!["blue"]!),
-                                      ),
-                                    ),
-                                  ),
-                                  // ElevatedButton(
-                                  //   child: Text(Series[1]!),
-                                  //   onPressed: () => _setSeries(1),
-                                  // ),
-                                  // ElevatedButton(
-                                  //   child: Text(Series[2]!),
-                                  //   onPressed: () => _setSeries(2),
-                                  // ),
-                                  // ElevatedButton(
-                                  //   child: Text(Series[3]!),
-                                  //   onPressed: () => _setSeries(3),
-                                  // ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const Text(
-                              textAlign: TextAlign.center,
-                              "\n \n © 2002, 2012 Julie Gossack, reproducible"),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 50.0),
-                          ),
-                        ],
+                                ),
+                              ],
+                            ),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.center,
+                            //   children: [
+                            //     IconButton(
+                            //       iconSize: 24,
+                            //       icon: const Icon(
+                            //           Icons.arrow_back_ios_new_outlined),
+                            //       onPressed: () {
+                            //         decrementDay();
+                            //       },
+                            //     ),
+                            //     const Spacer(),
+                            //     IconButton(
+                            //       iconSize: 24,
+                            //       icon: const Icon(
+                            //           Icons.arrow_forward_ios_outlined),
+                            //       onPressed: () {
+                            //         incrementDay();
+                            //       },
+                            //     ),
+                            //   ],
+                            // ),
+                            const Text(
+                                textAlign: TextAlign.center,
+                                "\n \n © 2002, 2012 Julie Gossack, reproducible"),
+                            const Padding(
+                              padding: EdgeInsets.only(top: 50.0),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                    // Row(
+                    //   mainAxisAlignment: MainAxisAlignment.center,
+                    //   children: [
+                    //     IconButton(
+                    //       iconSize: 24,
+                    //       icon: const Icon(Icons.arrow_back_ios_new_outlined),
+                    //       onPressed: () {
+                    //         decrementDay();
+                    //       },
+                    //     ),
+                    //     const Spacer(),
+                    //     IconButton(
+                    //       iconSize: 24,
+                    //       icon: const Icon(Icons.arrow_forward_ios_outlined),
+                    //       onPressed: () {
+                    //         incrementDay();
+                    //       },
+                    //     ),
+                    //   ],
+                    // ),
+                    // const Text(
+                    //     textAlign: TextAlign.center,
+                    //     "\n \n © 2002, 2012 Julie Gossack, reproducible"),
+                    // const Padding(
+                    //   padding: EdgeInsets.only(top: 50.0),
+                    // ),
+                  ],
+                ),
               ),
             ),
           ),
