@@ -5,6 +5,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'package:kardiology_flutter/HomePage.dart';
 
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
     super.key,
