@@ -1,8 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:day_night_time_picker/day_night_time_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 import 'dart:async';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 final series_colors = {
   1: {"red": 59, "green": 137, "blue": 226},
@@ -1558,6 +1571,76 @@ final verse_info = {
   },
 };
 
+final Map<String, String> bibleBookCodes = {
+  "Genesis": "GEN",
+  "Exodus": "EXO",
+  "Leviticus": "LEV",
+  "Numbers": "NUM",
+  "Deuteronomy": "DEU",
+  "Joshua": "JOS",
+  "Judges": "JDG",
+  "Ruth": "RUT",
+  "1 Samuel": "1SA",
+  "2 Samuel": "2SA",
+  "1 Kings": "1KI",
+  "2 Kings": "2KI",
+  "1 Chronicles": "1CH",
+  "2 Chronicles": "2CH",
+  "Ezra": "EZR",
+  "Nehemiah": "NEH",
+  "Esther": "EST",
+  "Job": "JOB",
+  "Psalms": "PSA",
+  "Psalm": "PSA",
+  "Proverbs": "PRO",
+  "Ecclesiastes": "ECC",
+  "Song of Solomon": "SOS",
+  "Isaiah": "ISA",
+  "Jeremiah": "JER",
+  "Lamentations": "LAM",
+  "Ezekiel": "EZE",
+  "Daniel": "DAN",
+  "Hosea": "HOS",
+  "Joel": "JOE",
+  "Amos": "AMO",
+  "Obadiah": "OBA",
+  "Jonah": "JON",
+  "Micah": "MIC",
+  "Nahum": "NAH",
+  "Habakkuk": "HAB",
+  "Zephaniah": "ZEP",
+  "Haggai": "HAG",
+  "Zechariah": "ZEC",
+  "Malachi": "MAL",
+  "Matthew": "MAT",
+  "Mark": "MAR",
+  "Luke": "LUK",
+  "John": "JHN",
+  "Acts": "ACT",
+  "Romans": "ROM",
+  "1 Corinthians": "1CO",
+  "2 Corinthians": "2CO",
+  "Galatians": "GAL",
+  "Ephesians": "EPH",
+  "Philippians": "PHP",
+  "Colossians": "COL",
+  "1 Thessalonians": "1TH",
+  "2 Thessalonians": "2TH",
+  "1 Timothy": "1TI",
+  "2 Timothy": "2TI",
+  "Titus": "TIT",
+  "Philemon": "PHM",
+  "Hebrews": "HEB",
+  "James": "JAM",
+  "1 Peter": "1PE",
+  "2 Peter": "2PE",
+  "1 John": "1JN",
+  "2 John": "2JN",
+  "3 John": "3JN",
+  "Jude": "JDE",
+  "Revelation": "REV"
+};
+
 class SelectedPage {
   int series;
   int title;
@@ -1653,11 +1736,396 @@ class ListPage extends StatelessWidget {
             ),
           ),
         ),
+        // currently this is being handled in the popup menu rather than the through a link in the ListPage
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(
+        //       Icons.settings,
+        //       color: Colors.black,
+        //       size: 40,
+        //     ),
+        //     onPressed: () {
+        //       Navigator.push(
+        //           context,
+        //           MaterialPageRoute<SelectedPage>(
+        //               builder: (context) => const OptionsPage()));
+        //     },
+        //   ),
+        // ],
       ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             children: pages,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OptionsPage extends StatefulWidget {
+  const OptionsPage({super.key});
+
+  @override
+  State<OptionsPage> createState() => _OptionsPageState();
+}
+
+class _OptionsPageState extends State<OptionsPage> {
+  int _selectedOption = 1;
+  Time? _savedTime;
+  bool _notificationsOn = true;
+  TimeOfDay _sunrise = const TimeOfDay(hour: 6, minute: 0);
+  TimeOfDay _sunset = const TimeOfDay(hour: 18, minute: 0);
+
+  @override
+  void initState() async {
+    await _setSunriseSunset();
+    await _getSavedTime();
+    await _initializeNotifications();
+
+    var nots = await getNotificationsBool();
+
+    if (nots != null) {
+      setState(() {
+        _notificationsOn = nots;
+      });
+    }
+
+    var option = await getOption();
+
+    if (option != null) {
+      setState(() {
+        _selectedOption = option;
+      });
+    }
+
+    super.initState();
+  }
+
+  Future<void> _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings(
+            '@mipmap/ic_launcher'); // assets/icon/icon.png
+
+    // This should automatically request permissions when the app is launched
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings();
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+    );
+
+    tz.initializeTimeZones();
+    tz.setLocalLocation(
+        tz.getLocation(await FlutterTimezone.getLocalTimezone()));
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onDidReceiveNotificationResponse: (_) async {
+      await _getSavedTime();
+      if (_savedTime != null) {
+        _showScheduledNotification(_savedTime!);
+      }
+    });
+  }
+
+  Widget _buildSegmentedButton(int value, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          vertical: 4.0), // Add spacing between buttons
+      child: SizedBox(
+        width: 200, // Fixed width
+        height: 50, // Fixed height
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                _selectedOption == value ? Colors.blue : Colors.grey[300],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0), // Rounded corners
+              side: BorderSide(
+                color: Colors.grey, // Border color
+                width: 1.0,
+              ),
+            ),
+          ),
+          onPressed: () {
+            _setOption(value);
+            setState(() {
+              _selectedOption = value;
+            });
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: _selectedOption == value ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_selectedOption == value)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.check, color: Colors.white, size: 20),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _getSavedTime() async {
+    final prefs = SharedPreferencesAsync();
+    final t = await prefs.getString('notification_time');
+
+    print("get time t: ${t.toString()}");
+
+    if (t != null) {
+      final parts = t.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      // set state to time
+      setState(() {
+        _savedTime = Time(hour: hour, minute: minute);
+      });
+    } else {
+      setState(() {
+        _savedTime =
+            Time(hour: DateTime.now().hour, minute: DateTime.now().minute);
+      });
+    }
+  }
+
+  _setNotificationsBool(bool nots) async {
+    final prefs = SharedPreferencesAsync();
+    await prefs.setBool('notifications_on', nots);
+  }
+
+  Future<bool?> getNotificationsBool() async {
+    final prefs = SharedPreferencesAsync();
+    return prefs.getBool('notifications_on');
+  }
+
+  _setOption(int option) async {
+    final prefs = SharedPreferencesAsync();
+    await prefs.setInt('dev_option', option);
+  }
+
+  Future<int?> getOption() async {
+    final prefs = SharedPreferencesAsync();
+    return prefs.getInt('dev_option');
+  }
+
+  _showScheduledNotification(Time nTime) async {
+    // convert Time to DateTime
+    DateTime now = DateTime.now();
+    DateTime nDateTime = DateTime(
+        now.year, now.month, now.day, nTime.hour, nTime.minute, nTime.second);
+
+    // schedule a notification
+    for (int i = 0; i < 2; i++) {
+      if (nDateTime.isAfter(now)) {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+            i,
+            'Kardiology',
+            'Take 5 minutes to read today\s devotional',
+            tz.TZDateTime.from(nDateTime, tz.local),
+            const NotificationDetails(
+                android: AndroidNotificationDetails('1', 'kardiology',
+                    channelDescription: 'Daily Notifications for the devo')),
+            // may need to update this
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
+      }
+
+      nDateTime = nDateTime.add(const Duration(days: 1));
+    }
+  }
+
+  _cancelNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  // Used to get Sunset/sunrise data
+  Future<Position> _getUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) throw "Geolocator service not enabled";
+
+    // Check for location permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) throw "permission denied";
+    }
+
+    if (permission == LocationPermission.deniedForever)
+      throw "permission denied forever";
+
+    // Get the current position
+    return await Geolocator.getCurrentPosition();
+  }
+
+  Future<Map<String, TimeOfDay>> _getSunriseSunset(
+      double latitude, double longitude) async {
+    final url =
+        'https://api.sunrise-sunset.org/json?lat=$latitude&lng=$longitude&formatted=0';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final sunrise = DateTime.parse(data['results']['sunrise']).toLocal();
+      final sunset = DateTime.parse(data['results']['sunset']).toLocal();
+
+      return {
+        'sunrise': TimeOfDay(
+            hour: sunrise.hour,
+            minute: sunrise.minute), //'${sunrise.hour}:${sunrise.minute}',
+        'sunset': TimeOfDay(hour: sunset.hour, minute: sunset.minute),
+      };
+    }
+
+    throw "Failed to fetch data";
+  }
+
+  Future<void> _setSunriseSunset() async {
+    try {
+      // Get the user's location
+      Position position = await _getUserLocation();
+
+      // Fetch sunrise and sunset times
+      Map<String, TimeOfDay> times =
+          await _getSunriseSunset(position.latitude, position.longitude);
+
+      print('Sunrise: ${times['sunrise']}');
+      print('Sunset: ${times['sunset']}');
+
+      setState(() {
+        _sunrise = times['sunrise']!;
+        _sunset = times['sunset']!;
+      });
+    } catch (e) {
+      print('Error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("build options page: ${_savedTime?.hour}:${_savedTime?.minute}");
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(
+            225, 220, 224, 221), //Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Settings"),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black,
+            size: 40,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(15))],
+              ),
+              Center(
+                  child: Text(
+                "Notification settings",
+                style: Theme.of(context).textTheme.headlineMedium,
+              )),
+              Row(
+                children: [
+                  const Padding(padding: EdgeInsets.all(5)),
+                  const Text("Turn on/off notifications"),
+                  const Spacer(),
+                  Switch(
+                    value: _notificationsOn,
+                    onChanged: (value) {
+                      if (value && _savedTime != null) {
+                        _showScheduledNotification(_savedTime!);
+                      } else {
+                        _cancelNotifications();
+                      }
+
+                      _setNotificationsBool(value);
+                      setState(() {
+                        _notificationsOn = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              // Row with an on/off slider to cancel or set notifications
+              _savedTime != null && _notificationsOn
+                  ? Row(children: [
+                      SizedBox(
+                        width: 400,
+                        // Render inline widget
+                        child: showPicker(
+                            isInlinePicker: true,
+                            context: context,
+                            value: _savedTime!,
+                            sunrise: _sunrise, // optional
+                            sunset: _sunset, // optional
+                            duskSpanInMinutes: 120, // optional
+                            onChange: (value) {
+                              // save value to the phone storage
+                              SharedPreferencesAsync prefs =
+                                  SharedPreferencesAsync();
+                              prefs.setString('notification_time',
+                                  '${value.hour}:${value.minute}');
+
+                              // set notification for this time
+                              _showScheduledNotification(value);
+                            }),
+                      ),
+                    ])
+                  : const Row(children: [Padding(padding: EdgeInsets.all(20))]),
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(20))],
+              ),
+              Center(
+                child: Text(
+                  "Set Default Devotional",
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(15))],
+              ),
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Center the buttons horizontally
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildSegmentedButton(1, "Attributes of God"),
+                      _buildSegmentedButton(2, "Jesus Christ"),
+                      _buildSegmentedButton(3, "Holy Spirit"),
+                    ],
+                  ),
+                ],
+              ),
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(500))],
+              ),
+            ],
           ),
         ),
       ),
@@ -1682,7 +2150,7 @@ class _HomePageState extends State<HomePage> {
   Timer? timer;
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
     _date = DateTime.now().day;
     timer = Timer.periodic(
@@ -1690,6 +2158,14 @@ class _HomePageState extends State<HomePage> {
         (Timer t) => setState((() {
               _date = DateTime.now().day;
             })));
+
+    final prefs = SharedPreferencesAsync();
+    var s = await prefs.getInt('dev_option');
+    if (s != null && s > 0 && s < 4) {
+      setState(() {
+        _series = s;
+      });
+    }
   }
 
   void _setSeries(int series) {
@@ -1728,6 +2204,47 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _picture = _picture - 1;
     });
+  }
+
+  String convertToInt(String s) {
+    if (s == "I") return "1";
+    if (s == "II") return "2";
+    return "3";
+  }
+
+  Future<void> _openYouVersion(String reference) async {
+    var ref = reference.split(" ");
+    var refS = "";
+    if (ref[0] == "I" || ref[0] == "II" || ref[0] == "III") {
+      var temp = "${convertToInt(ref[0])} ${ref[1]}";
+      refS = bibleBookCodes[temp] ?? "";
+      for (var i = 2; i < ref.length; i++) {
+        refS += "." + ref[i];
+      }
+    } else {
+      ref[0] = bibleBookCodes[ref[0]] ?? ref[0];
+      refS = ref.join(".");
+    }
+
+    // todo get rid of dash in last piece
+    refS = refS.split("-")[0];
+
+    refS = refS.split(":").join(".");
+    final Uri youVersionUri = Uri.parse('youversion://bible/59/$refS');
+
+    if (await canLaunchUrl(youVersionUri)) {
+      print("youVersionURI: $youVersionUri");
+      await launchUrl(youVersionUri);
+    } else {
+      // Fallback: Open in a browser if YouVersion is not installed
+      final Uri fallbackUri = Uri.parse('https://www.bible.com/bible/59/$refS');
+      if (await canLaunchUrl(fallbackUri)) {
+        print("fallbackUri: $fallbackUri");
+        await launchUrl(fallbackUri);
+      } else {
+        print('Could not launch $fallbackUri');
+      }
+    }
   }
 
   @override
@@ -1828,24 +2345,86 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 const Spacer(),
-                                GestureDetector(
-                                    onTap: () async {
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.menu),
+                                  onSelected: (String value) async {
+                                    if (value == 'ListPage') {
                                       final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute<SelectedPage>(
-                                              builder: (context) =>
-                                                  const ListPage()));
+                                        context,
+                                        MaterialPageRoute<SelectedPage>(
+                                          builder: (context) =>
+                                              const ListPage(),
+                                        ),
+                                      );
 
-                                      if (result == null) return;
+                                      if (result == null) {
+                                        final prefs = SharedPreferencesAsync();
+                                        var s =
+                                            await prefs.getInt('dev_option');
+                                        if (s != null && s > 0 && s < 4) {
+                                          setState(() {
+                                            _series = s;
+                                          });
+                                        }
+                                        return;
+                                      }
 
                                       if (result.series > 0) {
-                                        setState((() {
+                                        setState(() {
                                           _series = result.series;
                                           _date = result.title;
-                                        }));
+                                        });
                                       }
-                                    },
-                                    child: const Icon(Icons.menu)),
+                                    } else if (value == 'OptionsPage') {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const OptionsPage(),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'ListPage',
+                                      child: Text('Select Devotional'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'OptionsPage',
+                                      child: Text('Settings'),
+                                    ),
+                                  ],
+                                ),
+                                // GestureDetector(
+                                //     onTap: () async {
+                                //       final result = await Navigator.push(
+                                //           context,
+                                //           MaterialPageRoute<SelectedPage>(
+                                //               builder: (context) =>
+                                //                   const ListPage()));
+
+                                //       if (result == null) {
+                                //         final prefs = SharedPreferencesAsync();
+                                //         var s =
+                                //             await prefs.getInt('dev_option');
+                                //         if (s != null && s > 0 && s < 4) {
+                                //           setState(() {
+                                //             _series = s;
+                                //           });
+                                //         }
+                                //         return;
+                                //       }
+
+                                //       if (result.series > 0) {
+                                //         setState((() {
+                                //           _series = result.series;
+                                //           _date = result.title;
+                                //         }));
+                                //       }
+                                //     },
+                                //     child: const Icon(Icons.menu)),
                               ],
                             ),
                             const Text("\n"),
@@ -1863,34 +2442,33 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Text(
                                         Descriptions[_series]![_date]!,
-                                        // style: Theme.of(context).textTheme.headlineSmall,
                                         textAlign: TextAlign.center,
-                                        // selectionColor: new Color.fromRGBO(
-                                        //     255, 255, 255, 0.75),
                                       ),
                                       const Text("\n"),
                                       for (var verse
                                           in verse_info[_series]![_date]!)
-                                        Text.rich(
-                                          textAlign: TextAlign.center,
-                                          TextSpan(
-                                            text: '',
-                                            // style: TextStyle(
-                                            //     backgroundColor:
-                                            //         new Color.fromRGBO(255, 255, 255, 0.5)),
-                                            children: [
-                                              TextSpan(
-                                                text: '${verse["Reference"]}\n',
-                                                style: const TextStyle(
-                                                    decoration: TextDecoration
-                                                        .underline),
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    '${verse["Verse"]?.replaceAll("\n", " ")}',
-                                              ),
-                                              TextSpan(text: "\n"),
-                                            ],
+                                        GestureDetector(
+                                          onTap: () => _openYouVersion(
+                                              verse["Reference"] ?? ""),
+                                          child: Text.rich(
+                                            textAlign: TextAlign.center,
+                                            TextSpan(
+                                              text: '',
+                                              children: [
+                                                TextSpan(
+                                                  text:
+                                                      '${verse["Reference"]}\n',
+                                                  style: const TextStyle(
+                                                      decoration: TextDecoration
+                                                          .underline),
+                                                ),
+                                                TextSpan(
+                                                  text:
+                                                      '${verse["Verse"]?.replaceAll("\n", " ")}',
+                                                ),
+                                                const TextSpan(text: "\n"),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                     ],
@@ -1900,18 +2478,8 @@ class _HomePageState extends State<HomePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                ButtonBar(
-                                  // mainAxisAlignment: MainAxisAlignment.center,
+                                OverflowBar(
                                   children: [
-                                    //   IconButton(
-                                    //     padding: const EdgeInsets.all(0),
-                                    //     iconSize: 20,
-                                    //     icon: const Icon(
-                                    //         Icons.arrow_back_ios_new_outlined),
-                                    //     onPressed: () {
-                                    //       decrementDay();
-                                    //     },
-                                    //   ),
                                     ElevatedButton(
                                       onPressed: () {
                                         _setSeries(series1);
@@ -1920,11 +2488,11 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         Series[series1]!,
                                         style: const TextStyle(
-                                          // fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
                                       ),
                                     ),
+                                    const Padding(padding: EdgeInsets.all(10)),
                                     ElevatedButton(
                                       onPressed: () {
                                         _setSeries(series2);
@@ -1933,46 +2501,14 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         Series[series2]!,
                                         style: const TextStyle(
-                                          // fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
                                       ),
                                     ),
-                                    // IconButton(
-                                    //   padding: const EdgeInsets.all(0),
-                                    //   iconSize: 20,
-                                    //   icon: const Icon(
-                                    //       Icons.arrow_forward_ios_outlined),
-                                    //   onPressed: () {
-                                    //     incrementDay();
-                                    //   },
-                                    // ),
                                   ],
                                 ),
                               ],
                             ),
-                            // Row(
-                            //   mainAxisAlignment: MainAxisAlignment.center,
-                            //   children: [
-                            //     IconButton(
-                            //       iconSize: 24,
-                            //       icon: const Icon(
-                            //           Icons.arrow_back_ios_new_outlined),
-                            //       onPressed: () {
-                            //         decrementDay();
-                            //       },
-                            //     ),
-                            //     const Spacer(),
-                            //     IconButton(
-                            //       iconSize: 24,
-                            //       icon: const Icon(
-                            //           Icons.arrow_forward_ios_outlined),
-                            //       onPressed: () {
-                            //         incrementDay();
-                            //       },
-                            //     ),
-                            //   ],
-                            // ),
                             const Text(
                                 textAlign: TextAlign.center,
                                 "\n \n © 2002, 2012 Julie Gossack, reproducible"),
@@ -1983,32 +2519,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     IconButton(
-                    //       iconSize: 24,
-                    //       icon: const Icon(Icons.arrow_back_ios_new_outlined),
-                    //       onPressed: () {
-                    //         decrementDay();
-                    //       },
-                    //     ),
-                    //     const Spacer(),
-                    //     IconButton(
-                    //       iconSize: 24,
-                    //       icon: const Icon(Icons.arrow_forward_ios_outlined),
-                    //       onPressed: () {
-                    //         incrementDay();
-                    //       },
-                    //     ),
-                    //   ],
-                    // ),
-                    // const Text(
-                    //     textAlign: TextAlign.center,
-                    //     "\n \n © 2002, 2012 Julie Gossack, reproducible"),
-                    // const Padding(
-                    //   padding: EdgeInsets.only(top: 50.0),
-                    // ),
                   ],
                 ),
               ),

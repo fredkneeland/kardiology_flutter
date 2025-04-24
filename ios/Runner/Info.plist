@@ -44,5 +44,12 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+  		<string>youversion</string>
+  		<string>bible</string>
+	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>We need your location to provide sunrise and sunset times.</string>
 </dict>
 </plist>
