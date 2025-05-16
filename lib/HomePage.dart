@@ -11,6 +11,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:geolocator/geolocator.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'dart:async';
 
@@ -1648,6 +1650,219 @@ class SelectedPage {
   SelectedPage(this.series, this.title);
 }
 
+class VideosPage extends StatefulWidget {
+  const VideosPage({super.key});
+
+  @override
+  State<VideosPage> createState() => _VideosPageState();
+}
+
+class _VideosPageState extends State<VideosPage> {
+  late YoutubePlayerController _controller;
+  late List<WebViewController> _webViewControllers;
+  final List<String> _videos = [
+    "https://subspla.sh/ayvxuq5",
+    "https://gracebiblechurchboz.subspla.sh/np3h8gv",
+    "https://gracebiblechurchboz.subspla.sh/acfvvye",
+    "https://gracebiblechurchboz.subspla.sh/focnbnh",
+  ];
+  // final List<String> _videos = [
+  //   "https://gbcmt.org/sermons/more-media/?sapurl=LytjMzBjL2xiL2xpLytmYzkyZTVjP2JyYW5kaW5nPXRydWUmZW1iZWQ9dHJ1ZSZyZWNlbnRSb3V0ZT1hcHAud2ViLWFwcC5saWJyYXJ5Lmxpc3QmcmVjZW50Um91dGVTbHVnPSUyQmZjOTJlNWM=",
+  // ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the YouTube player controller with the video ID
+    _controller = YoutubePlayerController(
+      initialVideoId: 'axysKeIhgPI', // Replace with your YouTube video ID
+      flags: const YoutubePlayerFlags(
+        autoPlay:
+            false, // Set to true if you want the video to play automatically
+        mute: false,
+      ),
+    );
+
+    _webViewControllers = _videos
+        .map((url) => WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onProgress: (int progress) {
+                // Update loading bar.
+              },
+              onPageStarted: (String url) {},
+              onPageFinished: (String url) {},
+              onHttpError: (HttpResponseError error) {},
+              onWebResourceError: (WebResourceError error) {},
+              onNavigationRequest: (NavigationRequest request) {
+                if (request.url.startsWith('https://www.youtube.com/')) {
+                  return NavigationDecision.prevent;
+                }
+                return NavigationDecision.navigate;
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse(url)))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Videos'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Center(
+            //     child: Text("A Kardiology Story",
+            //         style: Theme.of(context).textTheme.headlineMedium)),
+            Center(
+              child: YoutubePlayer(
+                controller: _controller,
+                showVideoProgressIndicator: true,
+                progressIndicatorColor: Colors.blue,
+              ),
+            ),
+            // Center(
+            //     child: Text("\n",
+            //         style: Theme.of(context).textTheme.headlineMedium)),
+            // Center(
+            //   child: SizedBox(
+            //     height: 1000,
+            //     child: WebViewWidget(controller: _webViewControllers.first),
+            //   ),
+            // ),
+            ..._webViewControllers.map((controller) {
+              return Container(
+                height: 300, // Set a fixed height for each WebView
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                child: WebViewWidget(controller: controller),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// https://www.youtube.com/watch?v=axysKeIhgPI
+
+class AddRss extends StatelessWidget {
+  const AddRss({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Additional Resources'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10), // Add spacing between items
+
+            // add link to website
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/KARDIOLOGY%20101%20Bible%20Study.pdf"));
+              },
+              child: const Text(
+                "Kardiology 101 Bible Study",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/DiscussionGroupGuide.pdf"));
+              },
+              child: const Text(
+                "Discussion Group Guide",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/4Sinful%20Roots%203%20x%205%20color.pdf"));
+              },
+              child: const Text(
+                "Sinful Roots Chart",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/5Righteous%20Roots%203%20x%205%20color.pdf"));
+              },
+              child: const Text(
+                "Righteous Roots Chart",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/8Diagnostic%20Heart%20Chart%20-%20fillable.pdf"));
+              },
+              child: const Text(
+                "The Diagnostic Heart Chart",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class ListPage extends StatelessWidget {
   const ListPage({super.key});
 
@@ -1824,8 +2039,10 @@ class _OptionsPageState extends State<OptionsPage> {
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (_) async {
+      print("Notification clicked");
       await _getSavedTime();
       if (_savedTime != null) {
+        print("Saved time: ${_savedTime!.hour}:${_savedTime!.minute}");
         _showScheduledNotification(_savedTime!);
       }
     });
@@ -1927,15 +2144,15 @@ class _OptionsPageState extends State<OptionsPage> {
         now.year, now.month, now.day, nTime.hour, nTime.minute, nTime.second);
 
     // schedule a notification
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 4; i++) {
       if (nDateTime.isAfter(now)) {
         await flutterLocalNotificationsPlugin.zonedSchedule(
             i,
             'Kardiology',
             'Take 5 minutes to read today\s devotional',
             tz.TZDateTime.from(nDateTime, tz.local),
-            const NotificationDetails(
-                android: AndroidNotificationDetails('1', 'kardiology',
+            NotificationDetails(
+                android: AndroidNotificationDetails('$i', 'kardiology',
                     channelDescription: 'Daily Notifications for the devo')),
             // may need to update this
             uiLocalNotificationDateInterpretation:
@@ -2025,7 +2242,7 @@ class _OptionsPageState extends State<OptionsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color.fromARGB(
-            225, 220, 224, 221), //Theme.of(context).colorScheme.inversePrimary,
+            250, 250, 250, 250), //Theme.of(context).colorScheme.inversePrimary,
         title: const Text("Settings"),
         leading: IconButton(
           icon: const Icon(
@@ -2284,7 +2501,10 @@ class _HomePageState extends State<HomePage> {
             });
           }
         },
-        onPanEnd: (_) {
+        onPanEnd: (details) {
+          // determine if the swipe wasn't real
+          if (details.velocity.pixelsPerSecond.dx.abs() < 50) return;
+
           if (!_left) {
             decrementDay();
           } else {
@@ -2358,14 +2578,6 @@ class _HomePageState extends State<HomePage> {
                                       );
 
                                       if (result == null) {
-                                        final prefs = SharedPreferencesAsync();
-                                        var s =
-                                            await prefs.getInt('dev_option');
-                                        if (s != null && s > 0 && s < 4) {
-                                          setState(() {
-                                            _series = s;
-                                          });
-                                        }
                                         return;
                                       }
 
@@ -2383,6 +2595,29 @@ class _HomePageState extends State<HomePage> {
                                               const OptionsPage(),
                                         ),
                                       );
+
+                                      final prefs = SharedPreferencesAsync();
+                                      var s = await prefs.getInt('dev_option');
+                                      if (s != null && s > 0 && s < 4) {
+                                        setState(() {
+                                          _series = s;
+                                        });
+                                      }
+                                    } else if (value == 'VideoPage') {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const VideosPage(),
+                                        ),
+                                      );
+                                    } else if (value == "AddRss") {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const AddRss(),
+                                        ),
+                                      );
                                     }
                                   },
                                   itemBuilder: (BuildContext context) =>
@@ -2395,6 +2630,12 @@ class _HomePageState extends State<HomePage> {
                                       value: 'OptionsPage',
                                       child: Text('Settings'),
                                     ),
+                                    const PopupMenuItem<String>(
+                                        value: 'VideoPage',
+                                        child: Text('Videos')),
+                                    const PopupMenuItem<String>(
+                                        value: 'AddRss',
+                                        child: Text('Additional Resources')),
                                   ],
                                 ),
                                 // GestureDetector(
