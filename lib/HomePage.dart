@@ -2367,7 +2367,7 @@ class _HomePageState extends State<HomePage> {
   Timer? timer;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
     _date = DateTime.now().day;
     timer = Timer.periodic(
@@ -2377,12 +2377,19 @@ class _HomePageState extends State<HomePage> {
             })));
 
     final prefs = SharedPreferencesAsync();
-    var s = await prefs.getInt('dev_option');
-    if (s != null && s > 0 && s < 4) {
-      setState(() {
-        _series = s;
-      });
-    }
+    // var s = await prefs.getInt('dev_option');
+    prefs.getInt('dev_option').then((value) {
+      if (value != null && value > 0 && value < 4) {
+        setState(() {
+          _series = value;
+        });
+      }
+    });
+    // if (s != null && s > 0 && s < 4) {
+    //   setState(() {
+    //     _series = s;
+    //   });
+    // }
   }
 
   void _setSeries(int series) {
