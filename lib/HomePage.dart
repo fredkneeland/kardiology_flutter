@@ -1994,9 +1994,19 @@ class _OptionsPageState extends State<OptionsPage> {
   TimeOfDay _sunset = const TimeOfDay(hour: 18, minute: 0);
 
   @override
-  void initState() async {
+  void initState() {
+    print("~~~~~ init State");
+    setupSunrise();
+
+    super.initState();
+  }
+
+  Future<void> setupSunrise() async {
+    print("~~~~~ setupSunrise");
     await _setSunriseSunset();
+    print("~~~~~ getSavedTime");
     await _getSavedTime();
+    print("~~~~~~ initializeNotifications");
     await _initializeNotifications();
 
     var nots = await getNotificationsBool();
@@ -2015,7 +2025,7 @@ class _OptionsPageState extends State<OptionsPage> {
       });
     }
 
-    super.initState();
+    print("~~~~~~~ done");
   }
 
   Future<void> _initializeNotifications() async {
@@ -2033,10 +2043,24 @@ class _OptionsPageState extends State<OptionsPage> {
       iOS: initializationSettingsDarwin,
     );
 
+    print("~~~~~ getting time zone");
     tz.initializeTimeZones();
     tz.setLocalLocation(
         tz.getLocation(await FlutterTimezone.getLocalTimezone()));
 
+    // Get permissions for Android
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
+
+    // Maybe I need this?
+    final androidPlugin =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.requestNotificationsPermission();
+
+    print("~~~~~ initializing notifications");
     await flutterLocalNotificationsPlugin.initialize(initializationSettings,
         onDidReceiveNotificationResponse: (_) async {
       print("Notification clicked");
@@ -2153,7 +2177,9 @@ class _OptionsPageState extends State<OptionsPage> {
             tz.TZDateTime.from(nDateTime, tz.local),
             NotificationDetails(
                 android: AndroidNotificationDetails('$i', 'kardiology',
-                    channelDescription: 'Daily Notifications for the devo')),
+                    channelDescription: 'Daily Notifications for the devo',
+                    priority: Priority.high,
+                    importance: Importance.max)),
             // may need to update this
             uiLocalNotificationDateInterpretation:
                 UILocalNotificationDateInterpretation.absoluteTime,
@@ -2216,8 +2242,11 @@ class _OptionsPageState extends State<OptionsPage> {
 
   Future<void> _setSunriseSunset() async {
     try {
+      print("~~~~~~ Getting sunrise/sunset times");
       // Get the user's location
       Position position = await _getUserLocation();
+
+      print("~~~~~~~ getTimeOfDayFrom positiion");
 
       // Fetch sunrise and sunset times
       Map<String, TimeOfDay> times =
@@ -2231,7 +2260,7 @@ class _OptionsPageState extends State<OptionsPage> {
         _sunset = times['sunset']!;
       });
     } catch (e) {
-      print('Error: $e');
+      print('~~~~~~Error: $e');
     }
   }
 
@@ -2312,7 +2341,7 @@ class _OptionsPageState extends State<OptionsPage> {
                             }),
                       ),
                     ])
-                  : const Row(children: [Padding(padding: EdgeInsets.all(20))]),
+                  : const Row(children: [Padding(padding: EdgeInsets.all(10))]),
               const Row(
                 children: [Padding(padding: EdgeInsets.all(20))],
               ),
@@ -2340,7 +2369,7 @@ class _OptionsPageState extends State<OptionsPage> {
                 ],
               ),
               const Row(
-                children: [Padding(padding: EdgeInsets.all(500))],
+                children: [Padding(padding: EdgeInsets.only(top: 500))],
               ),
             ],
           ),
