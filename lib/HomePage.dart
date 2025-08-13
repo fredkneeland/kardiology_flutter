@@ -1,8 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:day_night_time_picker/day_night_time_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:geolocator/geolocator.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import 'dart:async';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
 final series_colors = {
   1: {"red": 59, "green": 137, "blue": 226},
@@ -1558,11 +1573,294 @@ final verse_info = {
   },
 };
 
+final Map<String, String> bibleBookCodes = {
+  "Genesis": "GEN",
+  "Exodus": "EXO",
+  "Leviticus": "LEV",
+  "Numbers": "NUM",
+  "Deuteronomy": "DEU",
+  "Joshua": "JOS",
+  "Judges": "JDG",
+  "Ruth": "RUT",
+  "1 Samuel": "1SA",
+  "2 Samuel": "2SA",
+  "1 Kings": "1KI",
+  "2 Kings": "2KI",
+  "1 Chronicles": "1CH",
+  "2 Chronicles": "2CH",
+  "Ezra": "EZR",
+  "Nehemiah": "NEH",
+  "Esther": "EST",
+  "Job": "JOB",
+  "Psalms": "PSA",
+  "Psalm": "PSA",
+  "Proverbs": "PRO",
+  "Ecclesiastes": "ECC",
+  "Song of Solomon": "SOS",
+  "Isaiah": "ISA",
+  "Jeremiah": "JER",
+  "Lamentations": "LAM",
+  "Ezekiel": "EZE",
+  "Daniel": "DAN",
+  "Hosea": "HOS",
+  "Joel": "JOE",
+  "Amos": "AMO",
+  "Obadiah": "OBA",
+  "Jonah": "JON",
+  "Micah": "MIC",
+  "Nahum": "NAH",
+  "Habakkuk": "HAB",
+  "Zephaniah": "ZEP",
+  "Haggai": "HAG",
+  "Zechariah": "ZEC",
+  "Malachi": "MAL",
+  "Matthew": "MAT",
+  "Mark": "MAR",
+  "Luke": "LUK",
+  "John": "JHN",
+  "Acts": "ACT",
+  "Romans": "ROM",
+  "1 Corinthians": "1CO",
+  "2 Corinthians": "2CO",
+  "Galatians": "GAL",
+  "Ephesians": "EPH",
+  "Philippians": "PHP",
+  "Colossians": "COL",
+  "1 Thessalonians": "1TH",
+  "2 Thessalonians": "2TH",
+  "1 Timothy": "1TI",
+  "2 Timothy": "2TI",
+  "Titus": "TIT",
+  "Philemon": "PHM",
+  "Hebrews": "HEB",
+  "James": "JAM",
+  "1 Peter": "1PE",
+  "2 Peter": "2PE",
+  "1 John": "1JN",
+  "2 John": "2JN",
+  "3 John": "3JN",
+  "Jude": "JDE",
+  "Revelation": "REV"
+};
+
 class SelectedPage {
   int series;
   int title;
 
   SelectedPage(this.series, this.title);
+}
+
+class VideosPage extends StatefulWidget {
+  const VideosPage({super.key});
+
+  @override
+  State<VideosPage> createState() => _VideosPageState();
+}
+
+class _VideosPageState extends State<VideosPage> {
+  late YoutubePlayerController _controller;
+  late List<WebViewController> _webViewControllers;
+  final List<String> _videos = [
+    "https://subspla.sh/ayvxuq5",
+    "https://gracebiblechurchboz.subspla.sh/np3h8gv",
+    "https://gracebiblechurchboz.subspla.sh/acfvvye",
+    "https://gracebiblechurchboz.subspla.sh/focnbnh",
+  ];
+  // final List<String> _videos = [
+  //   "https://gbcmt.org/sermons/more-media/?sapurl=LytjMzBjL2xiL2xpLytmYzkyZTVjP2JyYW5kaW5nPXRydWUmZW1iZWQ9dHJ1ZSZyZWNlbnRSb3V0ZT1hcHAud2ViLWFwcC5saWJyYXJ5Lmxpc3QmcmVjZW50Um91dGVTbHVnPSUyQmZjOTJlNWM=",
+  // ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Initialize the YouTube player controller with the video ID
+    _controller = YoutubePlayerController(
+      initialVideoId: 'axysKeIhgPI', // Replace with your YouTube video ID
+      flags: const YoutubePlayerFlags(
+        autoPlay:
+            false, // Set to true if you want the video to play automatically
+        mute: false,
+      ),
+    );
+
+    _webViewControllers = _videos
+        .map((url) => WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onProgress: (int progress) {
+                // Update loading bar.
+              },
+              onPageStarted: (String url) {},
+              onPageFinished: (String url) {},
+              onHttpError: (HttpResponseError error) {},
+              onWebResourceError: (WebResourceError error) {},
+              onNavigationRequest: (NavigationRequest request) {
+                if (request.url.startsWith('https://www.youtube.com/')) {
+                  return NavigationDecision.prevent;
+                }
+                return NavigationDecision.navigate;
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse(url)))
+        .toList();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Videos'),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Center(
+            //     child: Text("A Kardiology Story",
+            //         style: Theme.of(context).textTheme.headlineMedium)),
+            Center(
+              child: YoutubePlayer(
+                controller: _controller,
+                showVideoProgressIndicator: true,
+                progressIndicatorColor: Colors.blue,
+              ),
+            ),
+            // Center(
+            //     child: Text("\n",
+            //         style: Theme.of(context).textTheme.headlineMedium)),
+            // Center(
+            //   child: SizedBox(
+            //     height: 1000,
+            //     child: WebViewWidget(controller: _webViewControllers.first),
+            //   ),
+            // ),
+            ..._webViewControllers.map((controller) {
+              return Container(
+                height: 300, // Set a fixed height for each WebView
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                child: WebViewWidget(controller: controller),
+              );
+            }).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// https://www.youtube.com/watch?v=axysKeIhgPI
+
+class AddRss extends StatelessWidget {
+  const AddRss({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Additional Resources'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 10), // Add spacing between items
+
+            // add link to website
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/KARDIOLOGY%20101%20Bible%20Study.pdf"));
+              },
+              child: const Text(
+                "Kardiology 101 Bible Study",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/DiscussionGroupGuide.pdf"));
+              },
+              child: const Text(
+                "Discussion Group Guide",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/4Sinful%20Roots%203%20x%205%20color.pdf"));
+              },
+              child: const Text(
+                "Sinful Roots Chart",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/5Righteous%20Roots%203%20x%205%20color.pdf"));
+              },
+              child: const Text(
+                "Righteous Roots Chart",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+
+            const SizedBox(height: 10), // Add spacing between items
+
+            GestureDetector(
+              onTap: () {
+                launchUrl(Uri.parse(
+                    "https://gbcmt.org/ministries_docs/women/kardiology101/8Diagnostic%20Heart%20Chart%20-%20fillable.pdf"));
+              },
+              child: const Text(
+                "The Diagnostic Heart Chart",
+                style: TextStyle(
+                    fontSize: 20,
+                    decoration: TextDecoration.underline,
+                    decorationColor: Colors.blue, // Set underline color to blue
+                    color: Colors.blue),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class ListPage extends StatelessWidget {
@@ -1653,11 +1951,427 @@ class ListPage extends StatelessWidget {
             ),
           ),
         ),
+        // currently this is being handled in the popup menu rather than the through a link in the ListPage
+        // actions: [
+        //   IconButton(
+        //     icon: const Icon(
+        //       Icons.settings,
+        //       color: Colors.black,
+        //       size: 40,
+        //     ),
+        //     onPressed: () {
+        //       Navigator.push(
+        //           context,
+        //           MaterialPageRoute<SelectedPage>(
+        //               builder: (context) => const OptionsPage()));
+        //     },
+        //   ),
+        // ],
       ),
       body: Center(
         child: SingleChildScrollView(
           child: Column(
             children: pages,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OptionsPage extends StatefulWidget {
+  const OptionsPage({super.key});
+
+  @override
+  State<OptionsPage> createState() => _OptionsPageState();
+}
+
+class _OptionsPageState extends State<OptionsPage> {
+  int _selectedOption = 1;
+  Time? _savedTime;
+  bool _notificationsOn = true;
+  TimeOfDay _sunrise = const TimeOfDay(hour: 6, minute: 0);
+  TimeOfDay _sunset = const TimeOfDay(hour: 18, minute: 0);
+
+  @override
+  void initState() {
+    print("~~~~~ init State");
+    setupSunrise();
+
+    super.initState();
+  }
+
+  Future<void> setupSunrise() async {
+    print("~~~~~ setupSunrise");
+    await _setSunriseSunset();
+    print("~~~~~ getSavedTime");
+    await _getSavedTime();
+    print("~~~~~~ initializeNotifications");
+    await _initializeNotifications();
+
+    var nots = await getNotificationsBool();
+
+    if (nots != null) {
+      setState(() {
+        _notificationsOn = nots;
+      });
+    }
+
+    var option = await getOption();
+
+    if (option != null) {
+      setState(() {
+        _selectedOption = option;
+      });
+    }
+
+    print("~~~~~~~ done");
+  }
+
+  Future<void> _initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings(
+            '@mipmap/ic_launcher'); // assets/icon/icon.png
+
+    // This should automatically request permissions when the app is launched
+    const DarwinInitializationSettings initializationSettingsDarwin =
+        DarwinInitializationSettings();
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsDarwin,
+    );
+
+    print("~~~~~ getting time zone");
+    tz.initializeTimeZones();
+    tz.setLocalLocation(
+        tz.getLocation(await FlutterTimezone.getLocalTimezone()));
+
+    // Get permissions for Android
+    await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestExactAlarmsPermission();
+
+    // Maybe I need this?
+    final androidPlugin =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>();
+    await androidPlugin?.requestNotificationsPermission();
+
+    print("~~~~~ initializing notifications");
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+        onDidReceiveNotificationResponse: (_) async {
+      print("Notification clicked");
+      await _getSavedTime();
+      if (_savedTime != null) {
+        print("Saved time: ${_savedTime!.hour}:${_savedTime!.minute}");
+        _showScheduledNotification(_savedTime!);
+      }
+    });
+  }
+
+  Widget _buildSegmentedButton(int value, String label) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          vertical: 4.0), // Add spacing between buttons
+      child: SizedBox(
+        width: 200, // Fixed width
+        height: 50, // Fixed height
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor:
+                _selectedOption == value ? Colors.blue : Colors.grey[300],
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0), // Rounded corners
+              side: BorderSide(
+                color: Colors.grey, // Border color
+                width: 1.0,
+              ),
+            ),
+          ),
+          onPressed: () {
+            _setOption(value);
+            setState(() {
+              _selectedOption = value;
+            });
+          },
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: _selectedOption == value ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              if (_selectedOption == value)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8.0),
+                  child: Icon(Icons.check, color: Colors.white, size: 20),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  _getSavedTime() async {
+    final prefs = SharedPreferencesAsync();
+    final t = await prefs.getString('notification_time');
+
+    print("get time t: ${t.toString()}");
+
+    if (t != null) {
+      final parts = t.split(':');
+      final hour = int.parse(parts[0]);
+      final minute = int.parse(parts[1]);
+      // set state to time
+      setState(() {
+        _savedTime = Time(hour: hour, minute: minute);
+      });
+    } else {
+      setState(() {
+        _savedTime =
+            Time(hour: DateTime.now().hour, minute: DateTime.now().minute);
+      });
+    }
+  }
+
+  _setNotificationsBool(bool nots) async {
+    final prefs = SharedPreferencesAsync();
+    await prefs.setBool('notifications_on', nots);
+  }
+
+  Future<bool?> getNotificationsBool() async {
+    final prefs = SharedPreferencesAsync();
+    return prefs.getBool('notifications_on');
+  }
+
+  _setOption(int option) async {
+    final prefs = SharedPreferencesAsync();
+    await prefs.setInt('dev_option', option);
+  }
+
+  Future<int?> getOption() async {
+    final prefs = SharedPreferencesAsync();
+    return prefs.getInt('dev_option');
+  }
+
+  _showScheduledNotification(Time nTime) async {
+    // convert Time to DateTime
+    DateTime now = DateTime.now();
+    DateTime nDateTime = DateTime(
+        now.year, now.month, now.day, nTime.hour, nTime.minute, nTime.second);
+
+    // schedule a notification
+    for (int i = 0; i < 4; i++) {
+      if (nDateTime.isAfter(now)) {
+        await flutterLocalNotificationsPlugin.zonedSchedule(
+            i,
+            'Kardiology',
+            'Take 5 minutes to read today\s devotional',
+            tz.TZDateTime.from(nDateTime, tz.local),
+            NotificationDetails(
+                android: AndroidNotificationDetails('$i', 'kardiology',
+                    channelDescription: 'Daily Notifications for the devo',
+                    priority: Priority.high,
+                    importance: Importance.max)),
+            // may need to update this
+            uiLocalNotificationDateInterpretation:
+                UILocalNotificationDateInterpretation.absoluteTime,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle);
+      }
+
+      nDateTime = nDateTime.add(const Duration(days: 1));
+    }
+  }
+
+  _cancelNotifications() async {
+    await flutterLocalNotificationsPlugin.cancelAll();
+  }
+
+  // Used to get Sunset/sunrise data
+  Future<Position> _getUserLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) throw "Geolocator service not enabled";
+
+    // Check for location permissions
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) throw "permission denied";
+    }
+
+    if (permission == LocationPermission.deniedForever)
+      throw "permission denied forever";
+
+    // Get the current position
+    return await Geolocator.getCurrentPosition();
+  }
+
+  Future<Map<String, TimeOfDay>> _getSunriseSunset(
+      double latitude, double longitude) async {
+    final url =
+        'https://api.sunrise-sunset.org/json?lat=$latitude&lng=$longitude&formatted=0';
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final sunrise = DateTime.parse(data['results']['sunrise']).toLocal();
+      final sunset = DateTime.parse(data['results']['sunset']).toLocal();
+
+      return {
+        'sunrise': TimeOfDay(
+            hour: sunrise.hour,
+            minute: sunrise.minute), //'${sunrise.hour}:${sunrise.minute}',
+        'sunset': TimeOfDay(hour: sunset.hour, minute: sunset.minute),
+      };
+    }
+
+    throw "Failed to fetch data";
+  }
+
+  Future<void> _setSunriseSunset() async {
+    try {
+      print("~~~~~~ Getting sunrise/sunset times");
+      // Get the user's location
+      Position position = await _getUserLocation();
+
+      print("~~~~~~~ getTimeOfDayFrom positiion");
+
+      // Fetch sunrise and sunset times
+      Map<String, TimeOfDay> times =
+          await _getSunriseSunset(position.latitude, position.longitude);
+
+      print('Sunrise: ${times['sunrise']}');
+      print('Sunset: ${times['sunset']}');
+
+      setState(() {
+        _sunrise = times['sunrise']!;
+        _sunset = times['sunset']!;
+      });
+    } catch (e) {
+      print('~~~~~~Error: $e');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print("build options page: ${_savedTime?.hour}:${_savedTime?.minute}");
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Color.fromARGB(
+            250, 250, 250, 250), //Theme.of(context).colorScheme.inversePrimary,
+        title: const Text("Settings"),
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black,
+            size: 40,
+          ),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(15))],
+              ),
+              Center(
+                  child: Text(
+                "Notification settings",
+                style: Theme.of(context).textTheme.headlineMedium,
+              )),
+              Row(
+                children: [
+                  const Padding(padding: EdgeInsets.all(5)),
+                  const Text("Turn on/off notifications"),
+                  const Spacer(),
+                  Switch(
+                    value: _notificationsOn,
+                    onChanged: (value) {
+                      if (value && _savedTime != null) {
+                        _showScheduledNotification(_savedTime!);
+                      } else {
+                        _cancelNotifications();
+                      }
+
+                      _setNotificationsBool(value);
+                      setState(() {
+                        _notificationsOn = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              // Row with an on/off slider to cancel or set notifications
+              _savedTime != null && _notificationsOn
+                  ? Row(children: [
+                      SizedBox(
+                        width: 400,
+                        // Render inline widget
+                        child: showPicker(
+                            isInlinePicker: true,
+                            context: context,
+                            value: _savedTime!,
+                            sunrise: _sunrise, // optional
+                            sunset: _sunset, // optional
+                            duskSpanInMinutes: 120, // optional
+                            onChange: (value) {
+                              // save value to the phone storage
+                              SharedPreferencesAsync prefs =
+                                  SharedPreferencesAsync();
+                              prefs.setString('notification_time',
+                                  '${value.hour}:${value.minute}');
+
+                              // set notification for this time
+                              _showScheduledNotification(value);
+                            }),
+                      ),
+                    ])
+                  : const Row(children: [Padding(padding: EdgeInsets.all(10))]),
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(20))],
+              ),
+              Center(
+                child: Text(
+                  "Set Default Devotional",
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
+              ),
+              const Row(
+                children: [Padding(padding: EdgeInsets.all(15))],
+              ),
+              Row(
+                mainAxisAlignment:
+                    MainAxisAlignment.center, // Center the buttons horizontally
+                children: [
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildSegmentedButton(1, "Attributes of God"),
+                      _buildSegmentedButton(2, "Jesus Christ"),
+                      _buildSegmentedButton(3, "Holy Spirit"),
+                    ],
+                  ),
+                ],
+              ),
+              const Row(
+                children: [Padding(padding: EdgeInsets.only(top: 500))],
+              ),
+            ],
           ),
         ),
       ),
@@ -1690,6 +2404,21 @@ class _HomePageState extends State<HomePage> {
         (Timer t) => setState((() {
               _date = DateTime.now().day;
             })));
+
+    final prefs = SharedPreferencesAsync();
+    // var s = await prefs.getInt('dev_option');
+    prefs.getInt('dev_option').then((value) {
+      if (value != null && value > 0 && value < 4) {
+        setState(() {
+          _series = value;
+        });
+      }
+    });
+    // if (s != null && s > 0 && s < 4) {
+    //   setState(() {
+    //     _series = s;
+    //   });
+    // }
   }
 
   void _setSeries(int series) {
@@ -1730,6 +2459,47 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  String convertToInt(String s) {
+    if (s == "I") return "1";
+    if (s == "II") return "2";
+    return "3";
+  }
+
+  Future<void> _openYouVersion(String reference) async {
+    var ref = reference.split(" ");
+    var refS = "";
+    if (ref[0] == "I" || ref[0] == "II" || ref[0] == "III") {
+      var temp = "${convertToInt(ref[0])} ${ref[1]}";
+      refS = bibleBookCodes[temp] ?? "";
+      for (var i = 2; i < ref.length; i++) {
+        refS += "." + ref[i];
+      }
+    } else {
+      ref[0] = bibleBookCodes[ref[0]] ?? ref[0];
+      refS = ref.join(".");
+    }
+
+    // todo get rid of dash in last piece
+    refS = refS.split("-")[0];
+
+    refS = refS.split(":").join(".");
+    final Uri youVersionUri = Uri.parse('youversion://bible/59/$refS');
+
+    if (await canLaunchUrl(youVersionUri)) {
+      print("youVersionURI: $youVersionUri");
+      await launchUrl(youVersionUri);
+    } else {
+      // Fallback: Open in a browser if YouVersion is not installed
+      final Uri fallbackUri = Uri.parse('https://www.bible.com/bible/59/$refS');
+      if (await canLaunchUrl(fallbackUri)) {
+        print("fallbackUri: $fallbackUri");
+        await launchUrl(fallbackUri);
+      } else {
+        print('Could not launch $fallbackUri');
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     var series1 = (_series) % 3 + 1;
@@ -1767,7 +2537,10 @@ class _HomePageState extends State<HomePage> {
             });
           }
         },
-        onPanEnd: (_) {
+        onPanEnd: (details) {
+          // determine if the swipe wasn't real
+          if (details.velocity.pixelsPerSecond.dx.abs() < 50) return;
+
           if (!_left) {
             decrementDay();
           } else {
@@ -1828,24 +2601,107 @@ class _HomePageState extends State<HomePage> {
                                   ),
                                 ),
                                 const Spacer(),
-                                GestureDetector(
-                                    onTap: () async {
+                                PopupMenuButton<String>(
+                                  icon: const Icon(Icons.menu),
+                                  onSelected: (String value) async {
+                                    if (value == 'ListPage') {
                                       final result = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute<SelectedPage>(
-                                              builder: (context) =>
-                                                  const ListPage()));
+                                        context,
+                                        MaterialPageRoute<SelectedPage>(
+                                          builder: (context) =>
+                                              const ListPage(),
+                                        ),
+                                      );
 
-                                      if (result == null) return;
+                                      if (result == null) {
+                                        return;
+                                      }
 
                                       if (result.series > 0) {
-                                        setState((() {
+                                        setState(() {
                                           _series = result.series;
                                           _date = result.title;
-                                        }));
+                                        });
                                       }
-                                    },
-                                    child: const Icon(Icons.menu)),
+                                    } else if (value == 'OptionsPage') {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const OptionsPage(),
+                                        ),
+                                      );
+
+                                      final prefs = SharedPreferencesAsync();
+                                      var s = await prefs.getInt('dev_option');
+                                      if (s != null && s > 0 && s < 4) {
+                                        setState(() {
+                                          _series = s;
+                                        });
+                                      }
+                                    } else if (value == 'VideoPage') {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const VideosPage(),
+                                        ),
+                                      );
+                                    } else if (value == "AddRss") {
+                                      await Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => const AddRss(),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  itemBuilder: (BuildContext context) =>
+                                      <PopupMenuEntry<String>>[
+                                    const PopupMenuItem<String>(
+                                      value: 'ListPage',
+                                      child: Text('Select Devotional'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                      value: 'OptionsPage',
+                                      child: Text('Settings'),
+                                    ),
+                                    const PopupMenuItem<String>(
+                                        value: 'VideoPage',
+                                        child: Text('Videos')),
+                                    const PopupMenuItem<String>(
+                                        value: 'AddRss',
+                                        child: Text('Additional Resources')),
+                                  ],
+                                ),
+                                // GestureDetector(
+                                //     onTap: () async {
+                                //       final result = await Navigator.push(
+                                //           context,
+                                //           MaterialPageRoute<SelectedPage>(
+                                //               builder: (context) =>
+                                //                   const ListPage()));
+
+                                //       if (result == null) {
+                                //         final prefs = SharedPreferencesAsync();
+                                //         var s =
+                                //             await prefs.getInt('dev_option');
+                                //         if (s != null && s > 0 && s < 4) {
+                                //           setState(() {
+                                //             _series = s;
+                                //           });
+                                //         }
+                                //         return;
+                                //       }
+
+                                //       if (result.series > 0) {
+                                //         setState((() {
+                                //           _series = result.series;
+                                //           _date = result.title;
+                                //         }));
+                                //       }
+                                //     },
+                                //     child: const Icon(Icons.menu)),
                               ],
                             ),
                             const Text("\n"),
@@ -1863,34 +2719,33 @@ class _HomePageState extends State<HomePage> {
                                     children: [
                                       Text(
                                         Descriptions[_series]![_date]!,
-                                        // style: Theme.of(context).textTheme.headlineSmall,
                                         textAlign: TextAlign.center,
-                                        // selectionColor: new Color.fromRGBO(
-                                        //     255, 255, 255, 0.75),
                                       ),
                                       const Text("\n"),
                                       for (var verse
                                           in verse_info[_series]![_date]!)
-                                        Text.rich(
-                                          textAlign: TextAlign.center,
-                                          TextSpan(
-                                            text: '',
-                                            // style: TextStyle(
-                                            //     backgroundColor:
-                                            //         new Color.fromRGBO(255, 255, 255, 0.5)),
-                                            children: [
-                                              TextSpan(
-                                                text: '${verse["Reference"]}\n',
-                                                style: const TextStyle(
-                                                    decoration: TextDecoration
-                                                        .underline),
-                                              ),
-                                              TextSpan(
-                                                text:
-                                                    '${verse["Verse"]?.replaceAll("\n", " ")}',
-                                              ),
-                                              TextSpan(text: "\n"),
-                                            ],
+                                        GestureDetector(
+                                          onTap: () => _openYouVersion(
+                                              verse["Reference"] ?? ""),
+                                          child: Text.rich(
+                                            textAlign: TextAlign.center,
+                                            TextSpan(
+                                              text: '',
+                                              children: [
+                                                TextSpan(
+                                                  text:
+                                                      '${verse["Reference"]}\n',
+                                                  style: const TextStyle(
+                                                      decoration: TextDecoration
+                                                          .underline),
+                                                ),
+                                                TextSpan(
+                                                  text:
+                                                      '${verse["Verse"]?.replaceAll("\n", " ")}',
+                                                ),
+                                                const TextSpan(text: "\n"),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                     ],
@@ -1900,18 +2755,8 @@ class _HomePageState extends State<HomePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                ButtonBar(
-                                  // mainAxisAlignment: MainAxisAlignment.center,
+                                OverflowBar(
                                   children: [
-                                    //   IconButton(
-                                    //     padding: const EdgeInsets.all(0),
-                                    //     iconSize: 20,
-                                    //     icon: const Icon(
-                                    //         Icons.arrow_back_ios_new_outlined),
-                                    //     onPressed: () {
-                                    //       decrementDay();
-                                    //     },
-                                    //   ),
                                     ElevatedButton(
                                       onPressed: () {
                                         _setSeries(series1);
@@ -1920,11 +2765,11 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         Series[series1]!,
                                         style: const TextStyle(
-                                          // fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
                                       ),
                                     ),
+                                    const Padding(padding: EdgeInsets.all(10)),
                                     ElevatedButton(
                                       onPressed: () {
                                         _setSeries(series2);
@@ -1933,46 +2778,14 @@ class _HomePageState extends State<HomePage> {
                                       child: Text(
                                         Series[series2]!,
                                         style: const TextStyle(
-                                          // fontWeight: FontWeight.bold,
                                           color: Colors.black,
                                         ),
                                       ),
                                     ),
-                                    // IconButton(
-                                    //   padding: const EdgeInsets.all(0),
-                                    //   iconSize: 20,
-                                    //   icon: const Icon(
-                                    //       Icons.arrow_forward_ios_outlined),
-                                    //   onPressed: () {
-                                    //     incrementDay();
-                                    //   },
-                                    // ),
                                   ],
                                 ),
                               ],
                             ),
-                            // Row(
-                            //   mainAxisAlignment: MainAxisAlignment.center,
-                            //   children: [
-                            //     IconButton(
-                            //       iconSize: 24,
-                            //       icon: const Icon(
-                            //           Icons.arrow_back_ios_new_outlined),
-                            //       onPressed: () {
-                            //         decrementDay();
-                            //       },
-                            //     ),
-                            //     const Spacer(),
-                            //     IconButton(
-                            //       iconSize: 24,
-                            //       icon: const Icon(
-                            //           Icons.arrow_forward_ios_outlined),
-                            //       onPressed: () {
-                            //         incrementDay();
-                            //       },
-                            //     ),
-                            //   ],
-                            // ),
                             const Text(
                                 textAlign: TextAlign.center,
                                 "\n \n © 2002, 2012 Julie Gossack, reproducible"),
@@ -1983,32 +2796,6 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                     ),
-                    // Row(
-                    //   mainAxisAlignment: MainAxisAlignment.center,
-                    //   children: [
-                    //     IconButton(
-                    //       iconSize: 24,
-                    //       icon: const Icon(Icons.arrow_back_ios_new_outlined),
-                    //       onPressed: () {
-                    //         decrementDay();
-                    //       },
-                    //     ),
-                    //     const Spacer(),
-                    //     IconButton(
-                    //       iconSize: 24,
-                    //       icon: const Icon(Icons.arrow_forward_ios_outlined),
-                    //       onPressed: () {
-                    //         incrementDay();
-                    //       },
-                    //     ),
-                    //   ],
-                    // ),
-                    // const Text(
-                    //     textAlign: TextAlign.center,
-                    //     "\n \n © 2002, 2012 Julie Gossack, reproducible"),
-                    // const Padding(
-                    //   padding: EdgeInsets.only(top: 50.0),
-                    // ),
                   ],
                 ),
               ),
